@@ -24,7 +24,8 @@ class UnityEnv(gym.Env):
     https://github.com/openai/multiagent-particle-envs
     """
 
-    def __init__(self, environment_filename: str, worker_id=0, use_visual=False, uint8_visual=False, multiagent=False, flatten_branched=False):
+    def __init__(self, environment_filename: str, worker_id=0, use_visual=False, uint8_visual=False, multiagent=False, flatten_branched=False,
+            sim_arguments=[]):
         """
         Environment initialization
         :param environment_filename: The UnityEnvironment path or file to be wrapped in the gym.
@@ -34,7 +35,8 @@ class UnityEnv(gym.Env):
         :param multiagent: Whether to run in multi-agent mode (lists of obs, reward, done).
         :param flatten_branched: If True, turn branched discrete action spaces into a Discrete space rather than MultiDiscrete.
         """
-        self._env = UnityEnvironment(environment_filename, worker_id)
+        self._env = UnityEnvironment(environment_filename, worker_id,
+                sim_arguments=sim_arguments)
         self.name = self._env.academy_name
         self.visual_obs = None
         self._current_state = None
@@ -194,7 +196,7 @@ class UnityEnv(gym.Env):
         return list(default_observation), info.rewards, info.local_done, {
             "text_observation": info.text_observations,
             "brain_info": info}
-    
+
     def _preprocess_multi(self, multiple_visual_obs):
         if self.uint8_visual:
             return [(255.0*_visual_obs).astype(np.uint8) for _visual_obs in multiple_visual_obs]

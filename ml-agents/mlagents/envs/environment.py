@@ -26,7 +26,8 @@ class UnityEnvironment(object):
 
     def __init__(self, file_name=None, worker_id=0,
                  base_port=5005, seed=0,
-                 docker_training=False, no_graphics=False):
+                 docker_training=False, no_graphics=False,
+                 sim_arguments=[]):
         """
         Starts a new unity environment and establishes a connection with the environment.
         Notice: Currently communication between Unity and Python takes place over an open socket without authentication.
@@ -55,7 +56,7 @@ class UnityEnvironment(object):
                 "If the environment name is None, "
                 "the worker-id must be 0 in order to connect with the Editor.")
         if file_name is not None:
-            self.executable_launcher(file_name, docker_training, no_graphics)
+            self.executable_launcher(file_name, docker_training, no_graphics, sim_arguments)
         else:
             logger.info("Start training by pressing the Play button in the Unity Editor.")
         self._loaded = True
@@ -127,7 +128,7 @@ class UnityEnvironment(object):
     def external_brain_names(self):
         return self._external_brain_names
 
-    def executable_launcher(self, file_name, docker_training, no_graphics):
+    def executable_launcher(self, file_name, docker_training, no_graphics, sim_arguments):
         cwd = os.getcwd()
         file_name = (file_name.strip()
                      .replace('.app', '').replace('.exe', '').replace('.x86_64', '').replace('.x86',
@@ -177,10 +178,10 @@ class UnityEnvironment(object):
                 if no_graphics:
                     self.proc1 = subprocess.Popen(
                         [launch_string, '-nographics', '-batchmode',
-                         '--port', str(self.port)])
+                         '--port', str(self.port)] + sim_arguments)
                 else:
                     self.proc1 = subprocess.Popen(
-                        [launch_string, '--port', str(self.port)])
+                        [launch_string, '--port', str(self.port)] + sim_arguments)
             else:
                 """
                 Comments for future maintenance:
@@ -201,7 +202,8 @@ class UnityEnvironment(object):
                 """
                 docker_ls = ("exec xvfb-run --auto-servernum"
                              " --server-args='-screen 0 640x480x24'"
-                             " {0} --port {1}").format(launch_string, str(self.port))
+                             " {0} --port {1} {2}").format(launch_string, str(self.port),
+                                     " ".join(sim_arguments))
                 self.proc1 = subprocess.Popen(docker_ls,
                                               stdout=subprocess.PIPE,
                                               stderr=subprocess.PIPE,
