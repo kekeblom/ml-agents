@@ -36,7 +36,7 @@ class UnityEnv(gym.Env):
         :param flatten_branched: If True, turn branched discrete action spaces into a Discrete space rather than MultiDiscrete.
         """
         self._env = UnityEnvironment(environment_filename, worker_id,
-                sim_arguments=sim_arguments, docker_training=False)
+                sim_arguments=sim_arguments, docker_training=docker_training)
         self.name = self._env.academy_name
         self.visual_obs = None
         self._current_state = None
